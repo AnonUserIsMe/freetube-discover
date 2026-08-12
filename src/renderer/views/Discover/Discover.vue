@@ -136,7 +136,7 @@
         v-if="!isLoading && discoverCache.length > 0"
         class="discoverCount"
       >
-        {{ $t("Discover.Showing Results", { shown: shownResults.length, total: discoverCache.length }) }}
+        {{ $t("Discover.Showing Results", { shown: shownResults.length, total: filteredResults.length }) }}
       </p>
       <FtLoader
         v-if="isLoading"
@@ -172,9 +172,9 @@ const { t } = useI18n()
 
 const isLoading = ref(true)
 const shuffledResults = shallowRef([])
-const uploadDateFilter = ref('any')
-const videoLengthFilter = ref('any')
-const dateAddedFilter = ref('any')
+const uploadDateFilter = ref(store.getters.getDiscoverUploadDateFilter || 'any')
+const videoLengthFilter = ref(store.getters.getDiscoverVideoLengthFilter || 'any')
+const dateAddedFilter = ref(store.getters.getDiscoverDateAddedFilter || 'any')
 
 const discoverCache = computed(() => {
   return store.getters.getDiscoverCache
@@ -213,7 +213,7 @@ const LENGTH_FILTERS = {
   extra: (len) => len >= 3600
 }
 
-const shownResults = computed(() => {
+const filteredResults = computed(() => {
   let results = shuffledResults.value
 
   // Sort first, so filters preserve the ordering of whatever survives
@@ -245,7 +245,11 @@ const shownResults = computed(() => {
     results = results.filter(video => !Object.hasOwn(historyCacheById.value, video.videoId))
   }
 
-  return results.slice(0, pageSize.value)
+  return results
+})
+
+const shownResults = computed(() => {
+  return filteredResults.value.slice(0, pageSize.value)
 })
 
 function shuffleArray(array) {
@@ -270,6 +274,19 @@ watch(sortMode, (newVal) => {
   if (newVal === 'shuffle') {
     shuffledResults.value = shuffleArray(discoverCache.value)
   }
+})
+
+// Persist filter selections across sessions
+watch(uploadDateFilter, (newVal) => {
+  store.dispatch('updateDiscoverUploadDateFilter', newVal)
+})
+
+watch(videoLengthFilter, (newVal) => {
+  store.dispatch('updateDiscoverVideoLengthFilter', newVal)
+})
+
+watch(dateAddedFilter, (newVal) => {
+  store.dispatch('updateDiscoverDateAddedFilter', newVal)
 })
 
 function toggleHideWatched() {
