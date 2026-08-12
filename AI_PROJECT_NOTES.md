@@ -19,3 +19,5 @@ Config: ~/.config/freetube-discover/ (separate from system FreeTube)
 
 ## Scripts (project root)
 implement-explore.sh, finish-explore.sh, enhance-discover.sh, add-pagesize.sh, build-appimage.sh
+
+Update these notes when necesary
