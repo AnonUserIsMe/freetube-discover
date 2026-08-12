@@ -378,6 +378,39 @@ class SubscriptionCache {
   }
 }
 
+class Discover {
+  static find() {
+    return db.discover.findAsync({}).sort({ archivedAt: -1 })
+  }
+
+  static async upsert(record) {
+    const existing = await db.discover.findAsync({ videoId: record.videoId })
+    const now = Date.now()
+
+    if (existing.length > 0) {
+      // Already cataloged: preserve the original first-seen timestamp
+      record.firstArchivedAt = existing[0].firstArchivedAt ?? existing[0].archivedAt ?? now
+      record.timesArchived = (existing[0].timesArchived ?? 1) + 1
+    } else {
+      // Brand new to the catalog
+      record.firstArchivedAt = record.archivedAt ?? now
+      record.timesArchived = 1
+    }
+
+    record.archivedAt = record.archivedAt ?? now
+
+    return db.discover.updateAsync({ videoId: record.videoId }, record, { upsert: true })
+  }
+
+  static delete(videoId) {
+    return db.discover.removeAsync({ videoId })
+  }
+
+  static deleteAll() {
+    return db.discover.removeAsync({}, { multi: true })
+  }
+}
+
 function loadDatastores() {
   return Promise.allSettled([
     db.settings.loadDatabaseAsync(),
@@ -386,6 +419,7 @@ function loadDatastores() {
     db.playlists.loadDatabaseAsync(),
     db.searchHistory.loadDatabaseAsync(),
     db.subscriptionCache.loadDatabaseAsync(),
+    db.discover.loadDatabaseAsync(),
   ])
 }
 
@@ -397,6 +431,7 @@ function compactAllDatastores() {
     db.playlists.compactDatafileAsync(),
     db.searchHistory.compactDatafileAsync(),
     db.subscriptionCache.compactDatafileAsync(),
+    db.discover.compactDatafileAsync(),
   ])
 }
 
@@ -407,6 +442,7 @@ export {
   Playlists as playlists,
   SearchHistory as searchHistory,
   SubscriptionCache as subscriptionCache,
+  Discover as discover,
 
   loadDatastores,
   compactAllDatastores,

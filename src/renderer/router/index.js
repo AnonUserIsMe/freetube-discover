@@ -4,6 +4,7 @@ import SubscribedChannels from '../views/SubscribedChannels/SubscribedChannels.v
 import ProfileSettings from '../views/ProfileSettings/ProfileSettings.vue'
 import Trending from '../views/Trending/Trending.vue'
 import Popular from '../views/Popular/Popular.vue'
+import Discover from '../views/Discover/Discover.vue'
 import UserPlaylists from '../views/UserPlaylists/UserPlaylists.vue'
 import History from '../views/History/History.vue'
 import Settings from '../views/Settings/Settings.vue'
@@ -59,6 +60,14 @@ const router = createRouter({
         title: 'Most Popular'
       },
       component: Popular
+    },
+    {
+      path: '/discover',
+      name: 'discover',
+      meta: {
+        title: 'Discover'
+      },
+      component: Discover
     },
     {
       path: '/userplaylists',

@@ -226,6 +226,9 @@ const state = {
   hideVideoLikesAndDislikes: false,
   hideVideoViews: false,
   hideWatchedSubs: false,
+  hideWatchedDiscover: true,
+  discoverPageSize: 24,
+  discoverSortMode: 'shuffle',
   hideUploader: false,
   unsubscriptionPopupStatus: false,
   hideLabelsSideBar: false,
@@ -666,6 +669,26 @@ const customActions = {
 
           default:
             console.error('subscription-cache: invalid sync event received')
+        }
+      })
+
+      window.ftElectron.handleSyncDiscover((event, data) => {
+        switch (event) {
+          case SyncEvents.GENERAL.UPSERT:
+            commit('upsertToDiscoverCache', data)
+            break
+
+          case SyncEvents.GENERAL.DELETE:
+            commit('removeFromDiscoverCacheById', data)
+            break
+
+          case SyncEvents.GENERAL.DELETE_ALL:
+            commit('setDiscoverCache', [])
+            commit('setDiscoverCacheById', {})
+            break
+
+          default:
+            console.error('discover: invalid sync event received')
         }
       })
     }

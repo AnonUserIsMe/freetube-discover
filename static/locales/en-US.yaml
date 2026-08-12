@@ -144,6 +144,31 @@ Trending:
   Gaming: Gaming
   Sports: Sports
   Trending Tabs: Trending Tabs
+Discover:
+  Discover: Discover
+  Shuffle: Shuffle
+  Hide Watched: Hide Watched
+  No Videos: 'No videos to discover yet. Watch some videos and their "Up Next" recommendations will appear here!'
+  Clear Discover: Clear Discover
+  Clear Discover Confirm: 'Are you sure you want to clear your Discover feed? This cannot be undone.'
+  Cleared: Discover feed cleared
+  Upload Date: Upload Date
+  Video Length: Video Length
+  Any Time: Any Time
+  Last 24 Hours: Last 24 Hours
+  Last 7 Days: Last 7 Days
+  Last 30 Days: Last 30 Days
+  Last 90 Days: Last 90 Days
+  Any Length: Any Length
+  Under 4 Minutes: Under 4 Minutes
+  4-20 Minutes: 4-20 Minutes
+  20-60 Minutes: 20-60 Minutes
+  Over 60 Minutes: Over 60 Minutes
+  Page Size: Videos per page
+  Date Added: Date Added
+  Sort: Sort
+  Newest Added: Newest Added
+  Showing Results: 'Showing {shown} of {total}'
 Most Popular: Most Popular
 Feed:
   Feed Last Updated: '{feedName} feed last updated: {date}'
@@ -164,8 +189,6 @@ User Playlists:
   Add to Favorites: Add to {playlistName}
   Remove from Favorites: Remove from {playlistName}
 
-  Move Video to the Top: Move Video to the Top
-  Move Video to the Bottom: Move Video to the Bottom
   Move Video Up: Move Video Up
   Move Video Down: Move Video Down
   Remove from Playlist: Remove from Playlist
@@ -718,6 +741,7 @@ About:
   GitHub issues: GitHub issues
   Please check for duplicates before posting: Please check for duplicates before posting
   Website: Website
+  Email: Email
   Mastodon: Mastodon
   Chat on Matrix: Chat on Matrix
   Please read the {roomRulesLink}: Please read the {roomRulesLink}
@@ -1024,13 +1048,13 @@ Mini Player: Mini Player
 Comments:
   Comments: Comments
   Click to View Comments: Click to View Comments
+  Getting comment replies, please wait: Getting comment replies, please wait
   There are no more comments for this video: There are no more comments for this video
   Hide Comments: Hide Comments
   Top comments: Top comments
   Newest first: Newest First
   View {replyCount} replies: View 1 reply | View {replyCount} replies
   Hide {replyCount} replies: Hide 1 reply | Hide {replyCount} replies
-  Loading replies: Loading replies...
   View 1 reply from {channelName}: View 1 reply from {channelName}
   View {replyCount} replies from {channelName} and others: View {replyCount} replies from {channelName} and others
   Show More Replies: Show More Replies

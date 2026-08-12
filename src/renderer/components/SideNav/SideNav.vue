@@ -95,6 +95,27 @@
         </p>
       </router-link>
       <router-link
+        class="navOption mobileShow"
+        role="button"
+        to="/discover"
+        :title="$t('Discover.Discover')"
+      >
+        <div
+          class="thumbnailContainer"
+        >
+          <FontAwesomeIcon
+            :icon="['fas', 'compass']"
+            class="navIcon"
+            :class="applyNavIconExpand"
+          />
+        </div>
+        <p
+          class="navLabel"
+        >
+          {{ $t("Discover.Discover") }}
+        </p>
+      </router-link>
+      <router-link
         v-if="!hidePlaylists"
         class="navOption mobileShow"
         role="button"

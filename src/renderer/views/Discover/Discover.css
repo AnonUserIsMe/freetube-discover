@@ -1,0 +1,103 @@
+.card {
+  padding: 20px;
+}
+
+.headingIcon {
+  margin-inline-end: 8px;
+}
+
+.discoverControls {
+  margin-block: 16px;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.discoverShuffleButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  background: var(--primary-color);
+  color: var(--text-with-main-color);
+}
+
+.discoverShuffleButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.discoverFilterLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.discoverFilter {
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--primary-input-color);
+  color: var(--primary-text-color);
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.discoverPageSizeInput {
+  width: 60px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--primary-input-color);
+  color: var(--primary-text-color);
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.discoverHideWatchedLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.discoverClearButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  background: transparent;
+  color: var(--accent-color, #e53935);
+  margin-inline-start: auto;
+}
+
+.discoverClearButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.discoverClearButton:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.discoverEmpty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--secondary-text-color);
+}
+
+.discoverCount {
+  margin-block: 8px;
+  font-size: 13px;
+  color: var(--secondary-text-color);
+}

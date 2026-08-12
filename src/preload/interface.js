@@ -119,10 +119,12 @@ export default {
   /**
    * @param {string} videoId
    * @param {string} context
+   * @param {string} initialAttestationData
+   * @param {string} ytConfig
    * @returns {Promise<string>}
    */
-  generatePoToken: (videoId, context) => {
-    return ipcRenderer.invoke(IpcChannels.GENERATE_PO_TOKEN, videoId, context)
+  generatePoToken: (videoId, context, initialAttestationData, ytConfig) => {
+    return ipcRenderer.invoke(IpcChannels.GENERATE_PO_TOKEN, videoId, context, initialAttestationData, ytConfig)
   },
 
   chooseDefaultFolder: () => {
@@ -231,6 +233,14 @@ export default {
   },
 
   /**
+   * @param {number} action
+   * @param {any} [data]
+   */
+  dbDiscover: (action, data) => {
+    return ipcRenderer.invoke(IpcChannels.DB_DISCOVER, data ? { action, data } : { action })
+  },
+
+  /**
    * @param {(route: string) => void} handler
    */
   handleChangeView: (handler) => {
@@ -319,6 +329,15 @@ export default {
    */
   handleSyncSubscriptionCache: (handler) => {
     ipcRenderer.on(IpcChannels.SYNC_SUBSCRIPTION_CACHE, (_, { event, data }) => {
+      handler(event, data)
+    })
+  },
+
+  /**
+   * @param {(event: number, data: any) => void} handler
+   */
+  handleSyncDiscover: (handler) => {
+    ipcRenderer.on(IpcChannels.SYNC_DISCOVER, (_, { event, data }) => {
       handler(event, data)
     })
   }

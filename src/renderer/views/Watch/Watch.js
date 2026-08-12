@@ -530,6 +530,8 @@ export default defineComponent({
           // place watched recommended videos last
           .sort(this.sortWatchedVideosLast) ?? []
 
+        this.archiveRecommendedVideos()
+
         if (this.showFamilyFriendlyOnly && !this.isFamilyFriendly) {
           this.isLoading = false
           this.handleVideoEnded()
@@ -1020,6 +1022,8 @@ export default defineComponent({
           // place watched recommended videos last
           this.recommendedVideos = recommendedVideos.sort(this.sortWatchedVideosLast)
 
+          this.archiveRecommendedVideos()
+
           this.isLive = result.liveNow
           this.isFamilyFriendly = result.isFamilyFriendly
           this.isPostLiveDvr = !!result.isPostLiveDvr
@@ -1239,6 +1243,31 @@ export default defineComponent({
           }
         }
       }
+    },
+
+    archiveRecommendedVideos: function () {
+      if (this.recommendedVideos.length === 0) {
+        return
+      }
+
+      const discoverVideos = this.recommendedVideos.map(video => ({
+        videoId: video.videoId,
+        title: video.title,
+        author: video.author,
+        authorId: video.authorId,
+        viewCount: video.viewCount,
+        published: video.published,
+        lengthSeconds: video.lengthSeconds,
+        liveNow: video.liveNow,
+        isUpcoming: video.isUpcoming,
+        type: 'video',
+        archivedAt: Date.now(),
+        sourceVideoId: this.videoId
+      }))
+
+      discoverVideos.forEach(video => {
+        this.addToDiscover(video)
+      })
     },
 
     addToHistory: function (watchProgress) {
@@ -1980,6 +2009,7 @@ export default defineComponent({
       'updateLastViewedPlaylist',
       'updatePlaylistLastPlayedAt',
       'updateSubscriptionDetails',
+      'addToDiscover',
     ]),
 
     ...mapMutations([

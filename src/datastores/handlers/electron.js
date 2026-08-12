@@ -201,6 +201,24 @@ class SubscriptionCache {
   }
 }
 
+class Discover {
+  static find() {
+    return window.ftElectron.dbDiscover(DBActions.GENERAL.FIND)
+  }
+
+  static upsert(record) {
+    return window.ftElectron.dbDiscover(DBActions.GENERAL.UPSERT, record)
+  }
+
+  static delete(videoId) {
+    return window.ftElectron.dbDiscover(DBActions.GENERAL.DELETE, videoId)
+  }
+
+  static deleteAll() {
+    return window.ftElectron.dbDiscover(DBActions.GENERAL.DELETE_ALL)
+  }
+}
+
 export {
   Settings as settings,
   History as history,
@@ -208,4 +226,5 @@ export {
   Playlists as playlists,
   SearchHistory as searchHistory,
   SubscriptionCache as subscriptionCache,
+  Discover as discover,
 }

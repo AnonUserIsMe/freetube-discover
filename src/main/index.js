@@ -590,6 +590,16 @@ function runApp() {
         requestHeaders['Sec-Fetch-Site'] = 'same-origin'
         requestHeaders['Sec-Fetch-Mode'] = 'same-origin'
         requestHeaders['X-Youtube-Bootstrap-Logged-In'] = 'false'
+      } else if (url.startsWith('https://www.youtube.com/watch')) {
+        delete requestHeaders.Referer
+        delete requestHeaders.Origin
+        requestHeaders['Sec-Fetch-Dest'] = 'document'
+        requestHeaders['Sec-Fetch-Mode'] = 'navigate'
+        requestHeaders['Sec-Fetch-Site'] = 'none'
+        requestHeaders['Sec-Fetch-User'] = '?1'
+        requestHeaders.Cookie = requestHeaders.Cookie
+          ? requestHeaders.Cookie + `;PREF=tz=${Intl.DateTimeFormat().resolvedOptions().timeZone.replace('/', '.')}`
+          : ''
       } else if (url === 'https://www.youtube.com/sw.js_data' || url.startsWith('https://www.youtube.com/api/timedtext')) {
         requestHeaders.Referer = 'https://www.youtube.com/sw.js'
         requestHeaders['Sec-Fetch-Site'] = 'same-origin'
@@ -618,19 +628,27 @@ function runApp() {
         }
       }
 
-      // eslint-disable-next-line n/no-callback-literal
       callback({ requestHeaders })
     })
 
     // when we create a real session on the watch page, youtube returns tracking cookies, which we definitely don't want
-    const trackingCookieRequestFilter = { urls: ['https://www.youtube.com/sw.js_data', 'https://www.youtube.com/iframe_api'] }
+    const trackingCookieRequestFilter = {
+      urls: [
+        'https://www.youtube.com/sw.js_data',
+        'https://www.youtube.com/iframe_api',
+        'https://www.youtube.com/watch?*'
+      ]
+    }
 
     session.defaultSession.webRequest.onHeadersReceived(trackingCookieRequestFilter, ({ responseHeaders }, callback) => {
       if (responseHeaders) {
         delete responseHeaders['set-cookie']
+        delete responseHeaders['content-security-policy']
+        delete responseHeaders['cross-origin-opener-policy']
+        delete responseHeaders['report-to']
+        delete responseHeaders['reporting-endpoints']
       }
 
-      // eslint-disable-next-line n/no-callback-literal
       callback({ responseHeaders })
     })
 
@@ -726,7 +744,6 @@ function runApp() {
           redirectURL += `#${details.webContents.id}`
         }
 
-        // eslint-disable-next-line n/no-callback-literal
         callback({
           redirectURL
         })
@@ -1274,9 +1291,9 @@ function runApp() {
     })
   })
 
-  ipcMain.handle(IpcChannels.GENERATE_PO_TOKEN, (event, videoId, context) => {
+  ipcMain.handle(IpcChannels.GENERATE_PO_TOKEN, (event, videoId, context, initialAttestationData, ytConfig) => {
     if (isFreeTubeUrl(event.senderFrame.url)) {
-      return generatePoToken(videoId, context, proxyUrl)
+      return generatePoToken(videoId, context, initialAttestationData, ytConfig, proxyUrl)
     }
   })
 
@@ -1757,6 +1774,55 @@ function runApp() {
         default:
           // eslint-disable-next-line no-throw-literal
           throw 'invalid history db action'
+      }
+    } catch (err) {
+      if (typeof err === 'string') throw err
+      else throw err.toString()
+    }
+  })
+
+  // *********** //
+  // Discover
+  ipcMain.handle(IpcChannels.DB_DISCOVER, async (event, { action, data }) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) {
+      return
+    }
+
+    try {
+      switch (action) {
+        case DBActions.GENERAL.FIND:
+          return await baseHandlers.discover.find()
+
+        case DBActions.GENERAL.UPSERT:
+          await baseHandlers.discover.upsert(data)
+          syncOtherWindows(
+            IpcChannels.SYNC_DISCOVER,
+            event,
+            { event: SyncEvents.GENERAL.UPSERT, data }
+          )
+          return null
+
+        case DBActions.GENERAL.DELETE:
+          await baseHandlers.discover.delete(data)
+          syncOtherWindows(
+            IpcChannels.SYNC_DISCOVER,
+            event,
+            { event: SyncEvents.GENERAL.DELETE, data }
+          )
+          return null
+
+        case DBActions.GENERAL.DELETE_ALL:
+          await baseHandlers.discover.deleteAll()
+          syncOtherWindows(
+            IpcChannels.SYNC_DISCOVER,
+            event,
+            { event: SyncEvents.GENERAL.DELETE_ALL }
+          )
+          return null
+
+        default:
+          // eslint-disable-next-line no-throw-literal
+          throw 'invalid discover db action'
       }
     } catch (err) {
       if (typeof err === 'string') throw err
