@@ -13,14 +13,17 @@ store/modules/utils.js (searchSettings.hideWatched + setSearchHideWatched),
 helpers/utils.js (searchFiltersMatch), locales/en-US.yaml.
 
 ## Build
-cd ~/FreeTube && pnpm run pack && node _scripts/build-appimage.mjs
+cd ~/Desktop/FreeTube && pnpm run pack && node _scripts/build-appimage.mjs
 Output: build/FreeTube Discover-*.AppImage
 Config: ~/.config/freetube-discover/ (separate from system FreeTube)
+Note: `pnpm run lint` crashes on Node 20 (Set.prototype.union in
+eslint-plugin-unicorn). Upstream CI uses Node 24. Build (webpack) is unaffected.
 
 ## Git
 - Branch: feature/explore-page
-- Merged: v0.25.2-beta
+- Base: upstream v0.25.3-beta (merged 2026-08-28)
 - Custom: name=freetube-discover, productName="FreeTube Discover"
+- Custom commits sit on top of the upstream v0.25.3 merge commit.
 
 ## Scripts (project root)
 implement-explore.sh, finish-explore.sh, enhance-discover.sh, add-pagesize.sh, build-appimage.sh
