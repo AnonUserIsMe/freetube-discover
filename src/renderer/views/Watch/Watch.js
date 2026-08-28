@@ -944,6 +944,12 @@ export default defineComponent({
           }
         }
 
+        if (this.activeFormat === 'legacy' && (this.isLive || this.isPostLiveDvr || this.legacyFormats.length === 0)) {
+          // Legacy wanted as default but unavailable
+          showToast(this.t('Change Format.Legacy formats are not available for this video'))
+          this.handleActiveFormatUnavailable()
+        }
+
         this.isLoading = false
         this.updateTitle()
       } catch (err) {
@@ -1631,6 +1637,10 @@ export default defineComponent({
         }
       }
 
+      this.handleActiveFormatUnavailable()
+    },
+
+    handleActiveFormatUnavailable: function() {
       if (this.isLive || this.isPostLiveDvr) {
         // live streams don't have legacy formats, so only switch between dash and audio
 
