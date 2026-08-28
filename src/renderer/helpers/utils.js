@@ -525,7 +525,8 @@ export function searchFiltersMatch(filtersA, filtersB) {
     filtersA?.time === filtersB?.time &&
     filtersA?.type === filtersB?.type &&
     filtersA?.duration === filtersB?.duration &&
-    filtersA?.features?.length === filtersB?.features?.length && filtersA?.features?.every((val, index) => val === filtersB?.features[index])
+    filtersA?.features?.length === filtersB?.features?.length && filtersA?.features?.every((val, index) => val === filtersB?.features[index]) &&
+    filtersA?.hideWatched === filtersB?.hideWatched
 }
 
 /**

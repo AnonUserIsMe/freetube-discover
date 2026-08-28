@@ -61,6 +61,15 @@
         :values="PRIORITIZE_VALUES"
         class="searchRadio"
       />
+      <label
+        class="searchRadio hideWatchedFilter"
+      >
+        <input
+          v-model="hideWatchedValue"
+          type="checkbox"
+        >
+        {{ $t('Search Filters.Hide Watched') }}
+      </label>
     </FtFlexBox>
     <div class="searchFilterCloseButtonContainer">
       <FtButton
@@ -243,12 +252,20 @@ watch(featuresValue, (values) => {
   store.commit('setSearchFeatures', [...values])
 }, { deep: true })
 
+/** @type {import('vue').Ref<boolean>} */
+const hideWatchedValue = ref(searchSettings.hideWatched)
+
+watch(hideWatchedValue, (value) => {
+  store.commit('setSearchHideWatched', value)
+})
+
 const searchFilterValueChanged = computed(() => {
   return prioritizeValue.value !== PRIORITIZE_VALUES[0] ||
     timeValue.value !== TIME_VALUES[0] ||
     typeValue.value !== TYPE_VALUES[0] ||
     durationValue.value !== DURATION_VALUES[0] ||
-    featuresValue.value.length > 0
+    featuresValue.value.length > 0 ||
+    hideWatchedValue.value === true
 })
 
 watch(searchFilterValueChanged, (value) => {
@@ -272,6 +289,7 @@ function clearFilters() {
   typeValue.value = TYPE_VALUES[0]
   durationValue.value = DURATION_VALUES[0]
   featuresValue.value = []
+  hideWatchedValue.value = false
 }
 
 </script>

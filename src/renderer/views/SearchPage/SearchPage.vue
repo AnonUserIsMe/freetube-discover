@@ -105,6 +105,7 @@ watch(route, () => {
     type: route.query.type,
     duration: route.query.duration,
     features: features ?? [],
+    hideWatched: route.query.hideWatched === 'true',
   }
 
   const payload = {
@@ -135,6 +136,7 @@ onMounted(() => {
     type: route.query.type,
     duration: route.query.duration,
     features: features ?? [],
+    hideWatched: route.query.hideWatched === 'true',
   }
 
   const payload = {
@@ -201,7 +203,7 @@ async function performSearchLocal(payload) {
 
     apiUsed.value = 'local'
 
-    shownResults.value = results
+    shownResults.value = filterWatchedResults(results)
     nextPageRef.value = continuationData
 
     isLoading.value = false
@@ -244,7 +246,7 @@ async function getNextpageLocal(payload) {
 
     apiUsed.value = 'local'
 
-    shownResults.value = shownResults.value.concat(results)
+    shownResults.value = shownResults.value.concat(filterWatchedResults(results))
     nextPageRef.value = continuationData
 
     const historyPayload = {
@@ -285,10 +287,12 @@ async function performSearchInvidious(payload, options = { resetSearchPage: fals
   }
 
   try {
-    const results = await getInvidiousSearchResults(payload.query, searchPage.value, payload.searchSettings)
+    let results = await getInvidiousSearchResults(payload.query, searchPage.value, payload.searchSettings)
     if (!results) {
       return
     }
+
+    results = filterWatchedResults(results)
 
     apiUsed.value = 'invidious'
 
@@ -361,8 +365,12 @@ async function nextPage() {
 
 function replaceShownResults(history) {
   query.value = history.query
-  shownResults.value = history.data
+  // searchSettings must be restored before re-deriving shownResults so that
+  // the hideWatched filter (which reads it) uses the cached search's value
   searchSettings.value = history.searchSettings
+  // Re-apply the filter on top of the cached results, since the user may
+  // have watched videos from this result set after it was first fetched
+  shownResults.value = filterWatchedResults(history.data)
   apiUsed.value = history.apiUsed
 
   if (history.nextPageRef != null) {
@@ -375,6 +383,22 @@ function replaceShownResults(history) {
 
   // This is kept in case there is some race condition
   isLoading.value = false
+}
+
+/**
+ * @param {any[]} results
+ * @returns {any[]}
+ */
+function filterWatchedResults(results) {
+  if (!searchSettings.value.hideWatched) {
+    return results
+  }
+
+  const historyCache = store.getters.getHistoryCacheById
+
+  return results.filter(result => {
+    return result.type !== 'video' || historyCache[result.videoId] === undefined
+  })
 }
 
 /**
