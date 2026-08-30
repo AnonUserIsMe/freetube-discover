@@ -8,15 +8,6 @@
   padding: 5px;
 }
 
-.hideWatchedFilter {
-  align-items: center;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  user-select: none;
-}
-
 .radioFlexBox {
   margin-block: 0;
   margin-inline: auto;

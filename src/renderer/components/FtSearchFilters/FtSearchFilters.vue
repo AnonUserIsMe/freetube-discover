@@ -51,7 +51,7 @@
         v-model="featuresValue"
         :title="$t('Search Filters.Features.Features')"
         :labels="featureLabels"
-        :values="FEATURE_VALUES"
+        :values="FEATURES_VALUES"
         class="searchRadio"
       />
       <FtRadioButton
@@ -61,15 +61,6 @@
         :values="PRIORITIZE_VALUES"
         class="searchRadio"
       />
-      <label
-        class="searchRadio hideWatchedFilter"
-      >
-        <input
-          v-model="hideWatchedValue"
-          type="checkbox"
-        >
-        {{ $t('Search Filters.Hide Watched') }}
-      </label>
     </FtFlexBox>
     <div class="searchFilterCloseButtonContainer">
       <FtButton
@@ -138,6 +129,10 @@ const FEATURE_VALUES = [
   'location',
 ]
 
+// "Hide watched" is a client-side filter. It is shown in the features list,
+// but is not part of searchSettings.features (which is sent to search backends)
+const FEATURES_VALUES = [...FEATURE_VALUES, 'hideWatched']
+
 const NOT_ALLOWED_FOR_MOVIES_FEATURES = [
   'live',
   'subtitles',
@@ -187,6 +182,7 @@ const featureLabels = computed(() => [
   t('Search Filters.Features.3D'),
   t('Search Filters.Features.HDR'),
   t('Search Filters.Features.Location'),
+  t('Search Filters.Features.Hide Watched'),
 ])
 
 const searchSettings = store.getters.getSearchSettings
@@ -218,8 +214,9 @@ watch(typeValue, (value) => {
   } else if (value === 'channel' || value === 'playlist') {
     timeValue.value = ''
     durationValue.value = ''
+    // "Hide watched" is a client-side filter, so it can stay applied to any type
     if (featuresValue.value.length > 0) {
-      featuresValue.value = []
+      featuresValue.value = featuresValue.value.filter((feature) => feature === 'hideWatched')
     }
   } else if (value === 'movie') {
     if (featuresValue.value.length > 0) {
@@ -241,31 +238,30 @@ watch(durationValue, (value) => {
   store.commit('setSearchDuration', value)
 })
 
-/** @type {import('vue').Ref<('hd' | 'subtitles' | 'creative_commons' | '3d' | 'live' | '4k' | '360' | 'location' | 'hdr' | 'vr180')[]>} */
-const featuresValue = ref([...searchSettings.features])
+/** @type {import('vue').Ref<('hd' | 'subtitles' | 'creative_commons' | '3d' | 'live' | '4k' | '360' | 'location' | 'hdr' | 'vr180' | 'hideWatched')[]>} */
+const featuresValue = ref([
+  ...searchSettings.features,
+  ...(searchSettings.hideWatched ? ['hideWatched'] : [])
+])
 
 watch(featuresValue, (values) => {
-  if (values.length > 0 && (!isVideoOrMovieOrAll(typeValue.value) || NOT_ALLOWED_FOR_MOVIES_FEATURES.some(item => values.includes(item)))) {
+  // "Hide watched" is a client-side filter, keep it out of searchSettings.features
+  const features = values.filter((value) => value !== 'hideWatched')
+
+  if (features.length > 0 && (!isVideoOrMovieOrAll(typeValue.value) || NOT_ALLOWED_FOR_MOVIES_FEATURES.some(item => features.includes(item)))) {
     typeValue.value = 'all'
   }
 
-  store.commit('setSearchFeatures', [...values])
+  store.commit('setSearchHideWatched', values.includes('hideWatched'))
+  store.commit('setSearchFeatures', [...features])
 }, { deep: true })
-
-/** @type {import('vue').Ref<boolean>} */
-const hideWatchedValue = ref(searchSettings.hideWatched)
-
-watch(hideWatchedValue, (value) => {
-  store.commit('setSearchHideWatched', value)
-})
 
 const searchFilterValueChanged = computed(() => {
   return prioritizeValue.value !== PRIORITIZE_VALUES[0] ||
     timeValue.value !== TIME_VALUES[0] ||
     typeValue.value !== TYPE_VALUES[0] ||
     durationValue.value !== DURATION_VALUES[0] ||
-    featuresValue.value.length > 0 ||
-    hideWatchedValue.value === true
+    featuresValue.value.length > 0
 })
 
 watch(searchFilterValueChanged, (value) => {
@@ -289,7 +285,6 @@ function clearFilters() {
   typeValue.value = TYPE_VALUES[0]
   durationValue.value = DURATION_VALUES[0]
   featuresValue.value = []
-  hideWatchedValue.value = false
 }
 
 </script>

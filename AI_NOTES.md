@@ -6,10 +6,11 @@ All changes made by AI assistants via shell scripts.
 ## Feature
 Captures "Up Next" recommendations when watching videos -> discover.db.
 Discover page: shuffle, filters (date/length), page size, hide watched, clear.
-Search "Hide Watched" filter (off by default): checkbox in search filters prompt;
-hides search results present in history (historyCacheById). Not persisted (like
-other search filters). Files: FtSearchFilters.vue, SearchPage.vue, TopNav.vue,
-store/modules/utils.js (searchSettings.hideWatched + setSearchHideWatched),
+Search "Hide Watched" filter (off by default): shown as the last checkbox in the
+Features list of the search filters prompt (client-side filter, kept out of
+searchSettings.features). Hides search results present in history (historyCacheById).
+Not persisted (like other search filters). Files: FtSearchFilters.vue, SearchPage.vue,
+TopNav.vue, store/modules/utils.js (searchSettings.hideWatched + setSearchHideWatched),
 helpers/utils.js (searchFiltersMatch), locales/en-US.yaml.
 
 ## Build
