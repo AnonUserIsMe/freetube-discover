@@ -1,7 +1,8 @@
 # AI Project Notes — FreeTube Discover
 
-Fork of FreeTube with custom Discover feature. User is NOT a developer.
-All changes made by AI assistants via shell scripts.
+Fork of FreeTube with custom Discover feature. User is not a professional
+developer (codes casually with the pi coding harness); all recent changes
+were made by AI assistants via shell scripts.
 
 ## Feature
 Captures "Up Next" recommendations when watching videos -> discover.db.
@@ -26,7 +27,20 @@ eslint-plugin-unicorn). Upstream CI uses Node 24. Build (webpack) is unaffected.
 - Custom: name=freetube-discover, productName="FreeTube Discover"
 - Custom commits sit on top of the upstream v0.25.3 merge commit.
 
+### Updating from upstream (when a new FreeTube release comes out)
+1. `git fetch origin --tags`
+2. `git merge v0.25.X-beta` (the release tag) from the feature branch.
+3. Fix any conflicts in the custom files (see list above).
+4. Rebuild with the Build section's commands; test the AppImage.
+5. Commit the merge. Never rewrite or rebase the custom commit stack.
+
+### Custom footprint (where merge conflicts will happen)
+AI_NOTES.md; the files listed per feature above; _scripts/build-appimage.mjs and
+ebuilder.config.mjs; root *.sh build scripts; package.json (product name);
+pnpm-lock.yaml; static/locales/en-US.yaml. Upstream-only changes (other
+locales, .github/, etc.) should not conflict — if they do, inspect first.
+
 ## Scripts (project root)
 implement-explore.sh, finish-explore.sh, enhance-discover.sh, add-pagesize.sh, build-appimage.sh
 
-Update these notes when necesary
+Update these notes when necessary.
