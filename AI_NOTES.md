@@ -14,12 +14,24 @@ Not persisted (like other search filters). Files: FtSearchFilters.vue, SearchPag
 TopNav.vue, store/modules/utils.js (searchSettings.hideWatched + setSearchHideWatched),
 helpers/utils.js (searchFiltersMatch), locales/en-US.yaml.
 
+Discover icon (binoculars): faCompass was used in the code but NEVER registered, so
+FontAwesome rendered a blank icon. Fixed by registering faBinoculars in
+src/renderer/main.js (import list + library.add()) and pointing BOTH the SideNav
+entry (SideNav.vue) and the Discover page heading (views/Discover/Discover.vue) at
+['fas','binoculars']. faBinoculars exists in @fortawesome/free-solid-svg-icons.
+
 ## Build
 cd ~/Desktop/FreeTube && pnpm run pack && node _scripts/build-appimage.mjs
 Output: build/FreeTube Discover-*.AppImage
 Config: ~/.config/freetube-discover/ (separate from system FreeTube)
 Note: `pnpm run lint` crashes on Node 20 (Set.prototype.union in
 eslint-plugin-unicorn). Upstream CI uses Node 24. Build (webpack) is unaffected.
+
+### FontAwesome icons
+An icon only renders if it's registered in src/renderer/main.js (import it from
+'@fortawesome/free-solid-svg-icons' AND add it to library.add()). FontAwesome fails
+silently for unregistered icons — it just renders blank, no error. Always check a
+new icon is in that file. (This is how the blank Discover compass icon went unnoticed.)
 
 ## Git
 - Branch: feature/explore-page

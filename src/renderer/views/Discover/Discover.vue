@@ -5,7 +5,7 @@
     >
       <h2>
         <FontAwesomeIcon
-          :icon="['fas', 'compass']"
+          :icon="['fas', 'binoculars']"
           class="headingIcon"
         />
         {{ $t("Discover.Discover") }}

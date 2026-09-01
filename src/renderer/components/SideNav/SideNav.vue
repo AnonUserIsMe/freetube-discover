@@ -104,7 +104,7 @@
           class="thumbnailContainer"
         >
           <FontAwesomeIcon
-            :icon="['fas', 'compass']"
+            :icon="['fas', 'binoculars']"
             class="navIcon"
             :class="applyNavIconExpand"
           />
