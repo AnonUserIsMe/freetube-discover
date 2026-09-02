@@ -67,7 +67,7 @@
     "swiper": "^14.0.5",
     "terser": "^5.49.0",
     "vue": "^3.5.39",
-    "vue-i18n": "^11.4.6",
+    "vue-i18n": "^11.4.10",
     "vue-observe-visibility": "^2.0.0-alpha.1",
     "vue-router": "^5.1.0",
     "vuex": "^4.1.0",
