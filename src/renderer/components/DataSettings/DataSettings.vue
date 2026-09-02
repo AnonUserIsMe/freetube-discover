@@ -40,6 +40,15 @@
       />
     </FtFlexBox>
     <h4 class="groupTitle">
+      {{ $t('Discover.Discover') }}
+    </h4>
+    <FtFlexBox class="box">
+      <FtButton
+        :label="$t('Discover.Clear Discover')"
+        @click="showClearDiscoverPrompt = true"
+      />
+    </FtFlexBox>
+    <h4 class="groupTitle">
       {{ $t('Playlists') }}
     </h4>
     <FtFlexBox class="box">
@@ -103,6 +112,13 @@
       :option-names="exportWatchSearchHistoryPromptNames"
       :option-values="WATCH_SEARCH_HISTORY_PROMPT_VALUES"
       @click="exportSearchHistory"
+    />
+    <FtPrompt
+      v-if="showClearDiscoverPrompt"
+      :label="t('Discover.Clear Discover Confirm')"
+      :option-names="[t('Yes'), t('No')]"
+      :option-values="['clear', 'cancel']"
+      @click="handleClearDiscover"
     />
   </FtSettingsSection>
 </template>
@@ -1421,6 +1437,19 @@ async function importYouTubeSearchHistory(historyData) {
 }
 
 const showExportSearchHistoryPrompt = ref(false)
+const showClearDiscoverPrompt = ref(false)
+
+/**
+ * @param {'clear' | 'cancel' | null} option
+ */
+function handleClearDiscover(option) {
+  showClearDiscoverPrompt.value = false
+
+  if (option === 'clear') {
+    store.dispatch('removeAllDiscover')
+    showToast(t('Discover.Cleared'))
+  }
+}
 
 /**
  * @param {'freetube' | 'youtube' | null} option

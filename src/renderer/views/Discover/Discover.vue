@@ -13,60 +13,6 @@
       <FtFlexBox
         class="discoverControls"
       >
-        <button
-          class="discoverShuffleButton"
-          :disabled="isLoading || filteredResults.length === 0"
-          @click="shuffleDiscover"
-        >
-          <FontAwesomeIcon :icon="['fas', 'shuffle']" />
-          {{ $t("Discover.Shuffle") }}
-        </button>
-        <label class="discoverFilterLabel">
-          {{ $t("Discover.Date Added") }}
-          <select
-            v-model="dateAddedFilter"
-            class="discoverFilter"
-          >
-            <option value="any">
-              {{ $t("Discover.Any Time") }}
-            </option>
-            <option value="24h">
-              {{ $t("Discover.Last 24 Hours") }}
-            </option>
-            <option value="7d">
-              {{ $t("Discover.Last 7 Days") }}
-            </option>
-            <option value="30d">
-              {{ $t("Discover.Last 30 Days") }}
-            </option>
-            <option value="90d">
-              {{ $t("Discover.Last 90 Days") }}
-            </option>
-          </select>
-        </label>
-        <label class="discoverFilterLabel">
-          {{ $t("Discover.Upload Date") }}
-          <select
-            v-model="uploadDateFilter"
-            class="discoverFilter"
-          >
-            <option value="any">
-              {{ $t("Discover.Any Time") }}
-            </option>
-            <option value="24h">
-              {{ $t("Discover.Last 24 Hours") }}
-            </option>
-            <option value="7d">
-              {{ $t("Discover.Last 7 Days") }}
-            </option>
-            <option value="30d">
-              {{ $t("Discover.Last 30 Days") }}
-            </option>
-            <option value="90d">
-              {{ $t("Discover.Last 90 Days") }}
-            </option>
-          </select>
-        </label>
         <label class="discoverFilterLabel">
           {{ $t("Discover.Video Length") }}
           <select
@@ -90,28 +36,12 @@
             </option>
           </select>
         </label>
-        <label class="discoverHideWatchedLabel">
-          <input
-            type="checkbox"
-            :checked="hideWatchedDiscover"
-            @change="toggleHideWatched"
-          >
-          {{ $t("Discover.Hide Watched") }}
-        </label>
-        <button
-          class="discoverClearButton"
-          :disabled="isLoading || discoverCache.length === 0"
-          @click="clearDiscover"
-        >
-          <FontAwesomeIcon :icon="['fas', 'trash']" />
-          {{ $t("Discover.Clear Discover") }}
-        </button>
       </FtFlexBox>
       <p
-        v-if="!isLoading && filteredResults.length > 0"
+        v-if="!isLoading && shownResults.length > 0"
         class="discoverCount"
       >
-        {{ $t("Discover.Showing Results", { shown: shownResults.length, total: filteredResults.length }) }}
+        {{ $t("Discover.Showing Results", { shown: shownResults.length, total: orderedResults.length }) }}
       </p>
       <FtLoader
         v-if="isLoading"
@@ -127,7 +57,7 @@
         :data="shownResults"
       />
       <div
-        v-if="!isLoading && visibleCount < filteredResults.length"
+        v-if="!isLoading && visibleCount < orderedResults.length"
         ref="sentinelRef"
         class="discoverSentinel"
       />
@@ -138,7 +68,6 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import FtCard from '../../components/ft-card/ft-card.vue'
 import FtLoader from '../../components/FtLoader/FtLoader.vue'
@@ -146,47 +75,42 @@ import FtElementList from '../../components/FtElementList/FtElementList.vue'
 import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
 
 import store from '../../store/index'
-import { showToast } from '../../helpers/utils'
-
-const { t } = useI18n()
 
 // Infinite scroll: how many results are revealed at first, and how many
 // more the sentinel loads per intersection.
 const INITIAL_VISIBLE = 24
 const LOAD_STEP = 12
-// Feed ordering: a share of the slots keep the "most recently recommended"
-// order, the rest are dealt from random slots of the catalog.
+// Feed ordering: within each freshness bucket a share of the slots are
+// filled from a random queue of the WHOLE (filtered) catalog, so older
+// videos still surface. The rest keep "most recently recommended" order.
 const RANDOM_SHARE = 0.2
+
+// Freshness buckets, newest first. A video lands in the bucket matching
+// its most recent recommendation timestamp (archivedAt); videos without a
+// timestamp fall into the last bucket.
+const BUCKETS = [
+  { maxAgeMs: 86400000 },
+  { maxAgeMs: 604800000 },
+  { maxAgeMs: 2592000000 },
+  { maxAgeMs: Infinity }
+]
 
 const isLoading = ref(true)
 const visibleCount = ref(INITIAL_VISIBLE)
-const uploadDateFilter = ref(store.getters.getDiscoverUploadDateFilter || 'any')
 const videoLengthFilter = ref(store.getters.getDiscoverVideoLengthFilter || 'any')
-const dateAddedFilter = ref(store.getters.getDiscoverDateAddedFilter || 'any')
 
 const discoverCache = computed(() => {
   return store.getters.getDiscoverCache
-})
-
-const hideWatchedDiscover = computed(() => {
-  return store.getters.getHideWatchedDiscover
 })
 
 const historyCacheById = computed(() => {
   return store.getters.getHistoryCacheById
 })
 
-// Seeded PRNG so a given "deal" stays stable across reactive
-// re-computations instead of re-randomizing on every update.
+// Seeded PRNG so one "deal" stays stable across reactive re-computations
+// instead of re-randomizing on every update. A fresh seed is rolled each
+// time the page is mounted (i.e. every visit).
 const blendSeed = ref(1)
-
-// Shared range map: used by BOTH the Upload Date filter and the Date Added filter
-const TIME_RANGES_MS = {
-  '24h': 86400000,
-  '7d': 604800000,
-  '30d': 2592000000,
-  '90d': 7776000000
-}
 
 const LENGTH_FILTERS = {
   short: (len) => len < 240,
@@ -195,20 +119,9 @@ const LENGTH_FILTERS = {
   extra: (len) => len >= 3600
 }
 
+// Watched videos are always hidden: Discover is a "find me new stuff" feed.
 const filteredResults = computed(() => {
-  // The DB query returns videos sorted by archivedAt (last recommended)
-  // desc; re-sort defensively in case the cache order ever differs.
-  let results = [...discoverCache.value].sort((a, b) => (b.archivedAt ?? 0) - (a.archivedAt ?? 0))
-
-  if (uploadDateFilter.value !== 'any') {
-    const cutoff = Date.now() - TIME_RANGES_MS[uploadDateFilter.value]
-    results = results.filter(video => video.published && video.published >= cutoff)
-  }
-
-  if (dateAddedFilter.value !== 'any') {
-    const cutoff = Date.now() - TIME_RANGES_MS[dateAddedFilter.value]
-    results = results.filter(video => video.archivedAt && video.archivedAt >= cutoff)
-  }
+  let results = [...discoverCache.value]
 
   if (videoLengthFilter.value !== 'any') {
     const filterFn = LENGTH_FILTERS[videoLengthFilter.value]
@@ -220,11 +133,7 @@ const filteredResults = computed(() => {
     })
   }
 
-  if (hideWatchedDiscover.value) {
-    results = results.filter(video => !Object.hasOwn(historyCacheById.value, video.videoId))
-  }
-
-  return results
+  return results.filter(video => !Object.hasOwn(historyCacheById.value, video.videoId))
 })
 
 function mulberry32(seed) {
@@ -246,36 +155,77 @@ function seededShuffle(array, random) {
   return arr
 }
 
-// Deal the feed: ~80% of the slots keep the "most recently recommended"
-// ordering, while ~20% are pulled at random from anywhere in the catalog,
-// so older videos still surface.
-const blendedResults = computed(() => {
+// Deal the feed bucket by bucket (newest first): each bucket block keeps
+// ~80% of its videos in "most recently recommended" order and fills ~20%
+// of its slots from a random queue of the whole filtered catalog. Every
+// video appears exactly once; empty buckets are skipped silently.
+const orderedResults = computed(() => {
   const results = filteredResults.value
   const total = results.length
 
   if (total === 0) return []
 
+  const now = Date.now()
   const random = mulberry32(blendSeed.value)
-  const randomQueue = seededShuffle(results, random)
-  const randomSlotCount = total >= 2 ? Math.round(total * RANDOM_SHARE) : 0
-  const randomSlots = new Set(seededShuffle([...Array(total).keys()], random).slice(0, randomSlotCount))
 
+  // Newest first, so each bucket block is internally time-ordered
+  const resultsNewestFirst = [...results].sort((a, b) => (b.archivedAt ?? 0) - (a.archivedAt ?? 0))
+
+  const buckets = BUCKETS.map(() => [])
+  for (const video of resultsNewestFirst) {
+    const age = video.archivedAt ? now - video.archivedAt : Infinity
+    let placed = false
+    for (let b = 0; b < BUCKETS.length; b++) {
+      if (age < BUCKETS[b].maxAgeMs) {
+        buckets[b].push(video)
+        placed = true
+        break
+      }
+    }
+    if (!placed) {
+      buckets[buckets.length - 1].push(video)
+    }
+  }
+
+  const randomQueue = seededShuffle(results, random)
+  let randomCursor = 0
   const ordered = []
   const taken = new Set()
-  let randomCursor = 0
-  let newestCursor = 0
 
-  for (let i = 0; i < total; i++) {
-    if (randomSlots.has(i)) {
-      while (randomCursor < total && taken.has(randomQueue[randomCursor])) randomCursor++
-      ordered.push(randomQueue[randomCursor])
-      taken.add(randomQueue[randomCursor])
-      randomCursor++
-    } else {
-      while (newestCursor < total && taken.has(results[newestCursor])) newestCursor++
-      ordered.push(results[newestCursor])
-      taken.add(results[newestCursor])
-      newestCursor++
+  const takeRandom = () => {
+    while (randomCursor < total && taken.has(randomQueue[randomCursor].videoId)) randomCursor++
+    const video = randomQueue[randomCursor]
+    randomCursor++
+    taken.add(video.videoId)
+    return video
+  }
+
+  for (const bucket of buckets) {
+    const len = bucket.length
+    if (len === 0) continue
+
+    const randomSlotCount = len >= 2 ? Math.round(len * RANDOM_SHARE) : 0
+    const randomSlots = new Set(seededShuffle([...Array(len).keys()], random).slice(0, randomSlotCount))
+
+    // Advance past bucket videos that a random slot already claimed
+    let keptCursor = 0
+
+    for (let i = 0; i < len; i++) {
+      if (randomSlots.has(i)) {
+        ordered.push(takeRandom())
+      } else {
+        while (keptCursor < len && taken.has(bucket[keptCursor].videoId)) keptCursor++
+        if (keptCursor < len) {
+          const video = bucket[keptCursor]
+          keptCursor++
+          taken.add(video.videoId)
+          ordered.push(video)
+        } else {
+          // Bucket supply exhausted (its videos were all claimed by random
+          // slots) — top up from the global random queue instead
+          ordered.push(takeRandom())
+        }
+      }
     }
   }
 
@@ -283,45 +233,14 @@ const blendedResults = computed(() => {
 })
 
 const shownResults = computed(() => {
-  return blendedResults.value.slice(0, visibleCount.value)
+  return orderedResults.value.slice(0, visibleCount.value)
 })
 
-function shuffleDiscover() {
-  blendSeed.value = Math.floor(Math.random() * 0xFFFFFFFF)
-  visibleCount.value = INITIAL_VISIBLE
-  window.scrollTo({ top: 0 })
-}
-
-// Persist filter selections across sessions
-watch(uploadDateFilter, (newVal) => {
-  store.dispatch('updateDiscoverUploadDateFilter', newVal)
-  visibleCount.value = INITIAL_VISIBLE
-})
-
+// Persist the length filter across sessions; changing it re-reveals from the top
 watch(videoLengthFilter, (newVal) => {
   store.dispatch('updateDiscoverVideoLengthFilter', newVal)
   visibleCount.value = INITIAL_VISIBLE
 })
-
-watch(dateAddedFilter, (newVal) => {
-  store.dispatch('updateDiscoverDateAddedFilter', newVal)
-  visibleCount.value = INITIAL_VISIBLE
-})
-
-watch(hideWatchedDiscover, () => {
-  visibleCount.value = INITIAL_VISIBLE
-})
-
-function toggleHideWatched() {
-  store.dispatch('updateHideWatchedDiscover', !hideWatchedDiscover.value)
-}
-
-function clearDiscover() {
-  if (confirm(t('Discover.Clear Discover Confirm'))) {
-    store.dispatch('removeAllDiscover')
-    showToast(t('Discover.Cleared'))
-  }
-}
 
 // Infinite scroll: reveal more results when the sentinel at the bottom of
 // the list approaches the viewport (window-level scroll, like YouTube).
@@ -329,8 +248,8 @@ const sentinelRef = useTemplateRef('sentinelRef')
 let sentinelObserver = null
 
 function loadMoreResults() {
-  if (visibleCount.value < filteredResults.value.length) {
-    visibleCount.value = Math.min(visibleCount.value + LOAD_STEP, filteredResults.value.length)
+  if (visibleCount.value < orderedResults.value.length) {
+    visibleCount.value = Math.min(visibleCount.value + LOAD_STEP, orderedResults.value.length)
   }
 }
 
@@ -367,6 +286,7 @@ watch(sentinelRef, (el) => {
 
 onMounted(async () => {
   await store.dispatch('grabDiscover')
+  // Fresh deal on every visit
   blendSeed.value = Math.floor(Math.random() * 0xFFFFFFFF)
   isLoading.value = false
   await nextTick()

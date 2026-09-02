@@ -14,25 +14,6 @@
   flex-wrap: wrap;
 }
 
-.discoverShuffleButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-block: 8px;
-  padding-inline: 16px;
-  border: 0;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  background: var(--primary-color);
-  color: var(--text-with-main-color);
-}
-
-.discoverShuffleButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .discoverFilterLabel {
   display: flex;
   align-items: center;
@@ -51,48 +32,16 @@
   cursor: pointer;
 }
 
-.discoverHideWatchedLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.discoverClearButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-block: 8px;
-  padding-inline: 16px;
-  border: 0;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  background: transparent;
-  color: var(--accent-color, #e53935);
-  margin-inline-start: auto;
-}
-
-.discoverClearButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.discoverClearButton:hover:not(:disabled) {
-  text-decoration: underline;
+.discoverCount {
+  margin-block: 8px;
+  font-size: 13px;
+  color: var(--secondary-text-color);
 }
 
 .discoverEmpty {
   text-align: center;
   padding-block: 40px;
   padding-inline: 20px;
-  color: var(--secondary-text-color);
-}
-
-.discoverCount {
-  margin-block: 8px;
-  font-size: 13px;
   color: var(--secondary-text-color);
 }
 

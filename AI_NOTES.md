@@ -7,15 +7,17 @@ were made by AI assistants via shell scripts.
 ## Feature
 Captures "Up Next" recommendations when watching videos -> discover.db.
 Discover page: infinite scroll (IntersectionObserver sentinel at window level;
-24 shown initially, +12 per intersection), Shuffle re-deals the feed, filters
-(date added / upload date / length), hide watched, clear.
-Feed ordering = "deal" blend: 80% of slots follow most-recently-recommended
-order (archivedAt desc = last time recommended anywhere), 20% random from any
-point of the catalog (no repeats; seeded per deal so it stays stable until the
-user shuffles). Shuffle button re-deals + scrolls to top.
-The old page-size setting and sort dropdown were removed (commit history has
-them; persisted discoverPageSize/discoverSortMode DB rows are now inert and
-harmlessly ignored by the settings loader).
+24 shown initially, +12 per intersection, 600px pre-fetch margin) and a
+bucketed feed ordering: buckets 24h / 1-7d / 7-30d / 30+ by most recent
+recommendation (archivedAt); each bucket deals ~80% most-recently-recommended
+order + ~20% drawn from a random queue of the WHOLE filtered catalog (no
+repeats; seeded per page visit so a deal is stable, fresh on every mount).
+Watched videos are ALWAYS hidden (hardcoded — no toggle). Video Length filter
+is the only remaining Discover control; Date Added / Upload Date filters,
+Shuffle button, and the Clear Discover button were all removed.
+Clear Discover moved to Data Settings (its own group with an FtPrompt confirm,
+reusing Discover.* locale keys). Infinite-scroll + bucket deal logic lives in
+views/Discover/Discover.vue (self-contained; tested permutations in node).
 Search "Hide Watched" filter (off by default): shown as the last checkbox in the
 Features list of the search filters prompt (client-side filter, kept out of
 searchSettings.features). Hides search results present in history (historyCacheById).
