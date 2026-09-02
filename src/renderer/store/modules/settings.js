@@ -227,8 +227,6 @@ const state = {
   hideVideoViews: false,
   hideWatchedSubs: false,
   hideWatchedDiscover: true,
-  discoverPageSize: 24,
-  discoverSortMode: 'shuffle',
   discoverUploadDateFilter: 'any',
   discoverVideoLengthFilter: 'any',
   discoverDateAddedFilter: 'any',

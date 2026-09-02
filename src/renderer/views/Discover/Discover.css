@@ -1,5 +1,6 @@
 .card {
-  padding: 20px;
+  padding-block: 20px;
+  padding-inline: 20px;
 }
 
 .headingIcon {
@@ -17,8 +18,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  border: none;
+  padding-block: 8px;
+  padding-inline: 16px;
+  border: 0;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
@@ -39,22 +41,12 @@
 }
 
 .discoverFilter {
-  padding: 6px 8px;
+  padding-block: 6px;
+  padding-inline: 8px;
   border-radius: 4px;
   background: var(--primary-input-color);
   color: var(--primary-text-color);
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.discoverPageSizeInput {
-  width: 60px;
-  padding: 6px 8px;
-  border-radius: 4px;
-  background: var(--primary-input-color);
-  color: var(--primary-text-color);
-  border: none;
+  border: 0;
   font-size: 14px;
   cursor: pointer;
 }
@@ -71,8 +63,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  border: none;
+  padding-block: 8px;
+  padding-inline: 16px;
+  border: 0;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
@@ -92,7 +85,8 @@
 
 .discoverEmpty {
   text-align: center;
-  padding: 40px 20px;
+  padding-block: 40px;
+  padding-inline: 20px;
   color: var(--secondary-text-color);
 }
 
@@ -100,4 +94,9 @@
   margin-block: 8px;
   font-size: 13px;
   color: var(--secondary-text-color);
+}
+
+.discoverSentinel {
+  block-size: 1px;
+  inline-size: 100%;
 }

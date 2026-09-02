@@ -6,7 +6,16 @@ were made by AI assistants via shell scripts.
 
 ## Feature
 Captures "Up Next" recommendations when watching videos -> discover.db.
-Discover page: shuffle, filters (date/length), page size, hide watched, clear.
+Discover page: infinite scroll (IntersectionObserver sentinel at window level;
+24 shown initially, +12 per intersection), Shuffle re-deals the feed, filters
+(date added / upload date / length), hide watched, clear.
+Feed ordering = "deal" blend: 80% of slots follow most-recently-recommended
+order (archivedAt desc = last time recommended anywhere), 20% random from any
+point of the catalog (no repeats; seeded per deal so it stays stable until the
+user shuffles). Shuffle button re-deals + scrolls to top.
+The old page-size setting and sort dropdown were removed (commit history has
+them; persisted discoverPageSize/discoverSortMode DB rows are now inert and
+harmlessly ignored by the settings loader).
 Search "Hide Watched" filter (off by default): shown as the last checkbox in the
 Features list of the search filters prompt (client-side filter, kept out of
 searchSettings.features). Hides search results present in history (historyCacheById).
